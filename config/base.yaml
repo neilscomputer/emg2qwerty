@@ -15,12 +15,13 @@ train: True  # Whether to train or only run validation and test
 checkpoint: null  # Optional path to checkpoint file
 monitor_metric: val/CER
 monitor_mode: min
+name: baseline
 
 trainer:
   accelerator: gpu
   devices: 1
   num_nodes: 1
-  max_epochs: 150
+  max_epochs: 80 # 150
   default_root_dir: ${hydra:runtime.output_dir}
 
 callbacks:
@@ -36,6 +37,7 @@ dataset:
   root: ${hydra:runtime.cwd}/data
 
 hydra:
+  mode: MULTIRUN
   run:
     dir: logs/${now:%Y-%m-%d}/${now:%H-%M-%S}
   sweep:

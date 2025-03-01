@@ -11,13 +11,22 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
+from typing import Any
+from builtins import dict, list, int
+from collections import defaultdict
+
+import torch
+import omegaconf
 import hydra
 import pytorch_lightning as pl
 from hydra.utils import get_original_cwd, instantiate
 from omegaconf import DictConfig, ListConfig, OmegaConf
 
 from emg2qwerty import transforms, utils
+import emg2qwerty.lightning
+import emg2qwerty.decoder
 from emg2qwerty.transforms import Transform
+import emg2qwerty.custom_transforms
 
 
 log = logging.getLogger(__name__)
@@ -25,6 +34,15 @@ log = logging.getLogger(__name__)
 
 @hydra.main(version_base=None, config_path="../config", config_name="base")
 def main(config: DictConfig):
+    torch.serialization.add_safe_globals([
+        omegaconf.listconfig.ListConfig,
+        omegaconf.base.ContainerMetadata,
+        omegaconf.base.Metadata,
+        omegaconf.dictconfig.DictConfig,
+        Any, list, dict, defaultdict, int,
+        omegaconf.nodes.AnyNode,
+    ])
+
     log.info(f"\nConfig:\n{OmegaConf.to_yaml(config)}")
 
     # Add working dir to PYTHONPATH
@@ -33,6 +51,8 @@ def main(config: DictConfig):
     if working_dir not in python_paths:
         python_paths.append(working_dir)
         os.environ["PYTHONPATH"] = os.pathsep.join(python_paths)
+
+    log.info(f'Working dir={working_dir}. Python_paths={python_paths}')
 
     # Seed for determinism. This seeds torch, numpy and python random modules
     # taking global rank into account (for multi-process distributed setting).
@@ -104,6 +124,7 @@ def main(config: DictConfig):
             log.info(f"Resuming training from checkpoint {resume_from_checkpoint}")
 
         # Train
+        log.info("Executing fit")
         trainer.fit(module, datamodule, ckpt_path=resume_from_checkpoint)
 
         # Load best checkpoint
@@ -111,16 +132,20 @@ def main(config: DictConfig):
             trainer.checkpoint_callback.best_model_path
         )
 
+    log.info(f"Computing results")
     # Validate and test on the best checkpoint (if training), or on the
     # loaded `config.checkpoint` (otherwise)
     val_metrics = trainer.validate(module, datamodule)
     test_metrics = trainer.test(module, datamodule)
 
+    log.info(f"Compiling result dict")
     results = {
         "val_metrics": val_metrics,
         "test_metrics": test_metrics,
         "best_checkpoint": trainer.checkpoint_callback.best_model_path,
     }
+    log.info(f"results: {results}")
+    log.info(f"Pretty printing")
     pprint.pprint(results, sort_dicts=False)
 
 
