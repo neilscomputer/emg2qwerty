@@ -73,6 +73,7 @@ def main(config: DictConfig):
     def _build_transform(configs: Sequence[DictConfig]) -> Transform[Any, Any]:
         return transforms.Compose([instantiate(cfg) for cfg in configs])
 
+    print('Loading')
     # Instantiate LightningModule
     log.info(f"Instantiating LightningModule {config.module}")
     module = instantiate(
@@ -82,6 +83,7 @@ def main(config: DictConfig):
         decoder=config.decoder,
         _recursive_=False,
     )
+    print('Done loading')
     if config.checkpoint is not None:
         log.info(f"Loading module from checkpoint {config.checkpoint}")
         module = module.load_from_checkpoint(
