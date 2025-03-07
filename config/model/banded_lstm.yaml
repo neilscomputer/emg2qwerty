@@ -1,0 +1,10 @@
+# @package _global_
+module:
+  _target_: emg2qwerty.lightning.BandedLSTMModule
+  num_freq_bins: 33  # (n_fft // 2 + 1)
+  out_features: 256
+
+datamodule:
+  _target_: emg2qwerty.lightning.WindowedEMGDataModule
+  window_length: 8000  # 4 sec windows for 2kHz EMG
+  padding: [1800, 200]  # 900ms past context, 100ms future context
