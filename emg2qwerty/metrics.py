@@ -15,9 +15,9 @@ from emg2qwerty.data import LabelData
 
 
 KEY_MAPPINGS = {
-    ' ': 0,
+    ' ': 10,
     '`': 1,
-    '   ': 1,
+    '\t': 1,
     '1': 2,
     'q': 1,
     'a': 1,
@@ -105,7 +105,7 @@ class CharacterErrorRates(Metric):
             if op[0] == "replace":
                 p_char = prediction.text[op[1]]
                 t_char = target.text[op[2]]
-                if KEY_MAPPINGS.get(p_char, 10) != KEY_MAPPINGS.get(t_char, 11):
+                if KEY_MAPPINGS.get(p_char, 15) != KEY_MAPPINGS.get(t_char, 16):
                     self.finger_substitutions += 1
                 if abs(KEY_MAPPINGS.get(p_char, 15) - KEY_MAPPINGS.get(t_char, 20)) > 1:
                     self.almost_finger_substitutions += 1

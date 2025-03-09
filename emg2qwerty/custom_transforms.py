@@ -84,41 +84,21 @@ class LogWaveletSpectrogram:
         C = tensor.shape[-1]
         time_bins = 622  # T // self.time_scale
 
-        #def _band(t, band):
-        #    # We throw away Y1, the low-frequency coefficients, as we claim without
-        #    # any kind of evidence that they are not useful. Maybe we can go back
-        #    # later and change that?
-        #    _, Yh = self.dwt(t[:,band,:,:])
-        #    stack = []
-        #    for i in range(len(Yh)):
-        #        stack.append(F.interpolate(Yh[i], size=(time_bins,),
-        #                                   mode='linear', align_corners=True))
-        #    stacked = torch.stack(stack).movedim(-1, 0).movedim(1, -1)
-        #    # A DWT with 32 levels is idiotic, since the levels are spaced at powers
-        #    # of 2. This takes a more reasonable number of levels and does linear
-        #    # interpolation to get to the number of bins out that we expect.
-        #    stacked = F.interpolate(stacked, size=(C, self.num_levels_out),
-        #                            mode='bilinear', align_corners=True)
-        #    return stacked
-
-        #print(f'tensor.shape={tensor.shape}')
         x = tensor.movedim(0, -1)  # (T, ..., C) -> (..., C, T)
-        #print(f'x.shape={x.shape}')
         _, Yh = self.dwt(x)
         stack = []
         for i in range(len(Yh)):
             stack.append(F.interpolate(Yh[i], size=(time_bins,),
                                        mode='linear', align_corners=True))
         stacked = torch.stack(stack)
-        #print(f'stacked.shape={stacked.shape}')
         stacked = stacked.movedim(-1, 0).movedim(1, -1)
-        #print(f'post swap stacked.shape={stacked.shape}')
+
         # A DWT with 32 levels is idiotic, since the levels are spaced at powers
         # of 2. This takes a more reasonable number of levels and does linear
         # interpolation to get to the number of bins out that we expect.
         stacked = F.interpolate(stacked, size=(C, self.num_levels_out),
                                 mode='bilinear', align_corners=True)
-        #print(f'post interp stacked.shape={stacked.shape}')
+
         if self.log_normalize:
             logspec = torch.log10(torch.abs(stacked) + 1e-6)
         else:
