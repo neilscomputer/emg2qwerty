@@ -173,3 +173,4 @@ cython_debug/
 # Project-specific ignores
 data/
 logs/
+old-logs/
