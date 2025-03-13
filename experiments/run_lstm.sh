@@ -1,16 +1,23 @@
 #!/bin/bash
 
-PYTORCH_ENABLE_MPS_FALLBACK=1 HYDRA_FULL_ERROR=1 /usr/bin/time \
-    python -m emg2qwerty.train user="glob(single_user)" trainer.devices=1 \
-    name=tds-conv-lstm-spectogram-retry1 \
-    model=tds_conv_lstm_ctc \
-    trainer.max_epochs=150 --multirun
+#PYTORCH_ENABLE_MPS_FALLBACK=1 HYDRA_FULL_ERROR=1 /usr/bin/time \
+#    python -m emg2qwerty.train user="glob(single_user)" trainer.devices=1 \
+#    name=tds-conv-lstm-spectogram-retry1 \
+#    model=tds_conv_lstm_ctc \
+#    trainer.max_epochs=150 --multirun
+
+#PYTORCH_ENABLE_MPS_FALLBACK=1 HYDRA_FULL_ERROR=1 /usr/bin/time \
+#    python -m emg2qwerty.train user="glob(single_user)" trainer.devices=1 \
+#    name=tds-conv-lstm-wavelet-no-log-retry1 \
+#    model=tds_conv_lstm_ctc \
+#    transforms=wavelet-no-log \
 
 PYTORCH_ENABLE_MPS_FALLBACK=1 HYDRA_FULL_ERROR=1 /usr/bin/time \
     python -m emg2qwerty.train user="glob(single_user)" trainer.devices=1 \
-    name=tds-conv-lstm-wavelet-no-log-retry1 \
+    name=tds-conv-lstm-wavelet-retry1 \
     model=tds_conv_lstm_ctc \
-    transforms=wavelet-no-log \
+    transforms=wavelet \
+    trainer.max_epochs=150 --multirun
     trainer.max_epochs=150 --multirun
 
 #PYTORCH_ENABLE_MPS_FALLBACK=1 HYDRA_FULL_ERROR=1 /usr/bin/time \
